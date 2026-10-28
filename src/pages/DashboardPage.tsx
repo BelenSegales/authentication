@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { perfilService } from "../service/perfil";
+import { PerfilModal } from "../components/PerfilModal";
 
 function StoreMark() {
   return (
@@ -12,6 +15,17 @@ function StoreMark() {
 export function DashboardPage() {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
+  const usuarioNombre = useAuthStore((state) => state.usuarioNombre);
+  const usuarioAvatar = useAuthStore((state) => state.usuarioAvatar);
+  const actualizarPerfil = useAuthStore((state) => state.actualizarPerfil);
+
+  const [isPerfilOpen, setIsPerfilOpen] = useState(false);
+  useEffect(() => {
+    perfilService
+      .obtener()
+      .then((perfil) => actualizarPerfil(perfil.name, perfil.avatar_url))
+      .catch(() => {});
+  }, [actualizarPerfil]);
 
   const handleLogout = () => {
     logout();
@@ -27,10 +41,32 @@ export function DashboardPage() {
             <span className="text-lg font-bold tracking-tight">mercado</span>
           </div>
           <div className="flex items-center gap-4 text-sm font-semibold">
-            <span className="grid size-9 place-items-center rounded-full bg-emerald-100 text-xs text-emerald-800">
-              AM
+            {usuarioAvatar ? (
+              <img
+                src={usuarioAvatar}
+                alt="Foto de perfil"
+                className="size-10 rounded-full object-cover"
+              />
+            ) : (
+              <span className="grid size-9 place-items-center rounded-full bg-emerald-100 text-xs text-emerald-800">
+                {usuarioNombre
+                  ? usuarioNombre.substring(0, 2).toUpperCase()
+                  : "NN"}
+              </span>
+            )}
+
+            <span className="hidden sm:block">
+              {usuarioNombre ?? "Usuario Desconocido"}
             </span>
-            <span className="hidden sm:block">Alex Morgan</span>
+
+            <button
+              className="rounded-xl bg-stone-100 px-3 py-2 font-bold hover:bg-emerald-50 hover:text-emerald-700"
+              type="button"
+              onClick={() => setIsPerfilOpen(true)}
+            >
+              Mi Perfil
+            </button>
+
             <button
               className="text-xs font-semibold text-slate-500 transition hover:text-emerald-700"
               type="button"
@@ -47,7 +83,7 @@ export function DashboardPage() {
             Tu cuenta
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-            Hola, Alex
+            Hola, {usuarioNombre ?? "Desconocido"}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             Aquí tienes un resumen de tu actividad en mercado.
@@ -76,6 +112,8 @@ export function DashboardPage() {
           </article>
         </div>
       </div>
+
+      {isPerfilOpen && <PerfilModal onClose={() => setIsPerfilOpen(false)} />}
     </main>
   );
 }

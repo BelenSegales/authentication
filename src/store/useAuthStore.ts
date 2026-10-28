@@ -5,11 +5,13 @@ interface AuthState {
   token: string | null;
   usuarioNombre: string | null;
   usuarioRol: string | null;
+  usuarioAvatar: string | null;
   autenticado: boolean;
 
   login: (token: string, nombre: string, rol: string) => void;
   logout: () => void;
   esAdmin: () => boolean;
+  actualizarPerfil: (nombre: string, avatar: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,6 +20,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       usuarioNombre: null,
       usuarioRol: null,
+      usuarioAvatar: null,
       autenticado: false,
 
       login: (token, nombre, rol) => {
@@ -29,11 +32,15 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
+      actualizarPerfil: (nombre, avatar) =>
+        set({ usuarioNombre: nombre, usuarioAvatar: avatar }),
+
       logout: () => {
         set({
           token: null,
           usuarioNombre: null,
           usuarioRol: null,
+          usuarioAvatar: null,
           autenticado: false,
         });
       },
